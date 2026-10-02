@@ -1,0 +1,8 @@
+node_modules/
+.wrangler/
+.dev.vars
+seeds/brands.sql
+labels/*.csv
+labels/*.sql
+# scanner output contains local paths
+scanner/out/

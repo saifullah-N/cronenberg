@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cronenberg",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  // Targets the Workers Free plan: 10 ms CPU per invocation, no `limits.cpu_ms`.
+  "triggers": { "crons": ["0 */6 * * *"] },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cronenberg",
+      // Placeholder until `wrangler d1 create cronenberg`; local dev and tests don't need a real id.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "USER_AGENT": "cronenberg/0.1 (research; ground-truth feed ingest)"
+  }
+}
