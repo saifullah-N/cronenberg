@@ -111,6 +111,7 @@ function pickManifest(m: JsonObject): PluginInfo["manifest"] {
 }
 
 async function scanPluginDir(info: PluginInfo, root: string): Promise<void> {
+  info.absRoot = root;
   const errors = info.errors;
   const manifestRead = await readJsonFile(path.join(root, ".claude-plugin", "plugin.json"));
   if (manifestRead.error) errors.push(manifestRead.error);

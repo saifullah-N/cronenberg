@@ -15,6 +15,7 @@ const DOC_DIRS = [
 
 // Skills/agents/commands under a `.claude` directory, plus file hashes for the snapshot.
 async function collectClaudeDir(scope: ConfigScope, claudeDir: string): Promise<void> {
+  scope.absRoot = claudeDir;
   for (const [kind, dir] of DOC_DIRS) {
     const docs = await docsAt(kind, path.join(claudeDir, dir), claudeDir, scope.errors);
     if (kind === "skill") scope.skills = docs;

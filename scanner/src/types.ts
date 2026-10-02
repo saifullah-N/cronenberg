@@ -56,6 +56,7 @@ export interface NpmPackage {
 }
 
 export interface ComponentGroup {
+  absRoot?: string; // internal only (absolute path); never written to any output
   skills: DocComponent[];
   agents: DocComponent[];
   commands: DocComponent[];
@@ -118,7 +119,45 @@ export interface ScanSummary {
   files: number;
   symlinks: number;
   missingPlugins: string[];
+  findings: Record<Severity, number>;
+  textFilesScanned: number;
+  textFilesSkipped: { binary: number; large: number; deps: number };
   errors: string[];
+}
+
+export type Severity = "critical" | "high" | "medium" | "low" | "info";
+
+export type RuleId =
+  | "unicode-tags"
+  | "bidi-control"
+  | "variation-selector-supplement"
+  | "variation-selector-run"
+  | "zero-width"
+  | "zero-width-joiner"
+  | "invisible-operator"
+  | "fetch-and-run"
+  | "obfuscated-payload"
+  | "exfiltration"
+  | "concealment"
+  | "hook-command"
+  | "hook-all-tools"
+  | "hook-package-runner"
+  | "mcp-unpinned"
+  | "mcp-remote"
+  | "agent-shell"
+  | "truncated";
+
+export interface Finding {
+  rule: RuleId;
+  severity: Severity;
+  component: string; // bom-ref
+  file?: string; // relative to the component root
+  line?: number; // 1-based
+  column?: number; // 1-based, UTF-16 code units
+  message: string;
+  evidence?: string; // sanitized, ≤160 chars
+  context?: "documentation" | "test"; // non-runtime files; severity lowered one level
+  escalatedBy?: RuleId[];
 }
 
 export interface Snapshot {

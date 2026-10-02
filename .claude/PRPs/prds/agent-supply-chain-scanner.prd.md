@@ -141,7 +141,7 @@ Scan the owner's installed plugins (`ecc`, `cloudflare`) → AI-BOM in CycloneDX
 | # | Phase | Description | Status | Parallel | Depends | PRP Plan |
 |---|-------|-------------|--------|----------|---------|----------|
 | 1 | AI-BOM inventory | Enumerate installed plugins/components, hash files, CycloneDX output; gap check vs SkillSpector/mcp-scan | complete | - | - | [plan](../plans/completed/aibom-inventory.plan.md), [report](../reports/aibom-inventory-report.md) |
-| 2 | Deterministic detectors | Hidden Unicode, hooks, fetch-and-run, obfuscation, exfil, concealment phrases; file:line findings | pending | with 3 | 1 | - |
+| 2 | Deterministic detectors | Hidden Unicode, hooks, fetch-and-run, obfuscation, exfil, concealment phrases; file:line findings | complete | with 3 | 1 | [plan](../plans/completed/scanner-detectors.plan.md), [report](../reports/scanner-detectors-report.md) |
 | 3 | SimHash near-dup matching | Normalization, 64-bit SimHash, block index, seeded payload corpus | pending | with 2 | 1 | - |
 | 4 | Sandboxed LLM judge | Judge flagged/changed files; schema output; budget caps; local or Workers AI | pending | - | 2, 3 | - |
 | 5 | Change review | Snapshot approval, diff on update, optional SessionStart warning hook | pending | with 6 | 2 | - |

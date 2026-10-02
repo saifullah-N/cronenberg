@@ -1,8 +1,10 @@
 import { randomUUID as nodeRandomUUID } from "node:crypto";
 import path from "node:path";
 import { buildBom } from "./cyclonedx.ts";
+import { runDetectors, type DetectResult } from "./detect/index.ts";
+import { SEVERITIES } from "./detect/rules.ts";
 import { loadPlugins } from "./plugins.ts";
-import type { ComponentGroup, ConfigScope, PluginInfo, ScanSummary, Snapshot } from "./types.ts";
+import type { ComponentGroup, ConfigScope, Finding, PluginInfo, ScanSummary, Severity, Snapshot } from "./types.ts";
 import { loadProjectConfig, loadUserConfig } from "./userConfig.ts";
 import { compare, isObject, readJsonFile } from "./util.ts";
 
@@ -11,13 +13,19 @@ export interface ScanOptions {
   project?: string;
   now?: () => Date;
   randomUUID?: () => string;
+  detect?: boolean; // default true
+  includeDeps?: boolean; // also scan node_modules content
 }
 
 export interface ScanResult {
   bom: Record<string, unknown>;
   snapshot: Snapshot;
   summary: ScanSummary;
+  findings: Finding[];
+  bases: Record<string, string>; // bom-ref → component directory in "~/…" form
 }
+
+const NO_DETECTION: DetectResult = { findings: [], textFilesScanned: 0, skipped: { binary: 0, large: 0, deps: 0 }, errors: [] };
 
 const WRITE_OR_SHELL_TOOLS = new Set(["Write", "Edit", "MultiEdit", "NotebookEdit", "Bash", "PowerShell"]);
 
@@ -56,7 +64,14 @@ function sortRecord(record: Record<string, number>): Record<string, number> {
   return Object.fromEntries(Object.entries(record).sort((a, b) => b[1] - a[1] || compare(a[0], b[0])));
 }
 
-function summarize(plugins: readonly PluginInfo[], scopes: readonly ConfigScope[], errors: string[]): ScanSummary {
+function summarize(
+  plugins: readonly PluginInfo[],
+  scopes: readonly ConfigScope[],
+  errors: string[],
+  detection: DetectResult,
+): ScanSummary {
+  const findings = Object.fromEntries(SEVERITIES.map((s) => [s, 0])) as Record<Severity, number>;
+  for (const f of detection.findings) findings[f.severity]++;
   const groups = [
     ...plugins.map((p) => ({ owner: p.id, group: p as ComponentGroup })),
     ...scopes.map((s) => ({ owner: s.name, group: s as ComponentGroup })),
@@ -100,6 +115,9 @@ function summarize(plugins: readonly PluginInfo[], scopes: readonly ConfigScope[
     files: files.length - symlinks,
     symlinks,
     missingPlugins: plugins.filter((p) => p.missing).map((p) => p.id),
+    findings,
+    textFilesScanned: detection.textFilesScanned,
+    textFilesSkipped: detection.skipped,
     errors,
   };
 }
@@ -122,6 +140,14 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
   const scopes = [await loadUserConfig(root, settings)];
   if (opts.project) scopes.push(await loadProjectConfig(path.resolve(opts.project)));
 
+  // Runs on absolute roots before the "~" pass; findings carry component-relative paths.
+  const detection =
+    opts.detect === false ? NO_DETECTION : await runDetectors([...plugins, ...scopes], { includeDeps: opts.includeDeps ?? false });
+  for (const f of detection.findings) {
+    f.message = tilde(f.message);
+    if (f.evidence) f.evidence = tilde(f.evidence);
+  }
+
   for (const p of plugins) {
     p.installPath = tilde(p.installPath);
     tildeGroup(p, tilde);
@@ -135,7 +161,12 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     ...errors.map(tilde),
     ...plugins.flatMap((p) => p.errors.map((e) => `${p.ref}: ${e}`)),
     ...scopes.flatMap((s) => s.errors.map((e) => `${s.ref}: ${e}`)),
+    ...detection.errors.map(tilde),
   ];
+
+  const bases: Record<string, string> = {};
+  for (const p of plugins) bases[p.ref] = p.installPath;
+  for (const s of scopes) bases[s.ref] = s.ref === "config:project" ? `${s.location}/.claude` : s.location;
 
   const generatedAt = now.toISOString();
   const snapshot: Snapshot = { generatedAt, root: "~", components: {} };
@@ -146,6 +177,8 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
   return {
     bom: buildBom({ plugins, scopes, timestamp: generatedAt, serialNumber: `urn:uuid:${uuid}` }),
     snapshot,
-    summary: summarize(plugins, scopes, allErrors),
+    summary: summarize(plugins, scopes, allErrors, detection),
+    findings: detection.findings,
+    bases,
   };
 }

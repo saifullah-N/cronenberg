@@ -5,7 +5,7 @@ import type { DocComponent, DocKind } from "./types.ts";
 import { compare, errorMessage, isObject, kindOf, sha256Hex, str, toPosix } from "./util.ts";
 
 const MAX_DESCRIPTION = 300;
-const FRONTMATTER = /^﻿?---\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
+const FRONTMATTER = /^\uFEFF?---\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
 
 export function readFrontmatter(text: string): { data: Record<string, unknown>; error?: string } {
   const match = FRONTMATTER.exec(text);
