@@ -55,6 +55,10 @@ export const RULES: Record<RuleId, { title: string; help: string }> = {
     title: "Concealment or override instruction",
     help: "Text telling the agent to hide actions from the user or ignore its instructions.",
   },
+  "known-payload": {
+    title: "Near-duplicate of a known payload",
+    help: "A paragraph whose SimHash is within 7 of 64 bits of a seeded malicious instruction, so reworded copies still match.",
+  },
   "hook-command": {
     title: "Hook runs a command",
     help: "Hooks run shell commands automatically on agent lifecycle events.",

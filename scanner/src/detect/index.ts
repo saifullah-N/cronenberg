@@ -3,6 +3,7 @@ import { compare, errorMessage, mapLimit } from "../util.ts";
 import { capabilityFindings } from "./capabilities.ts";
 import { lineIndex, locate, sanitizeEvidence, snippetAround } from "./location.ts";
 import { concealment, exfiltration, fetchAndRun, obfuscation } from "./patterns.ts";
+import { knownPayloads } from "./payloads.ts";
 import { SEVERITIES, SEVERITY_RANK } from "./rules.ts";
 import { readTextFile, selectFiles, type DetectTarget, type FileContext, type SkipCounts } from "./textFiles.ts";
 import { findHiddenUnicode, type UnicodeMatch } from "./unicode.ts";
@@ -70,6 +71,7 @@ export function detectFile(ctx: FileContext): Finding[] {
     ...obfuscation(ctx.text, ctx.path),
     ...exfiltration(ctx.text),
     ...concealment(ctx.text),
+    ...knownPayloads(ctx.text),
   ];
   if (!raw.length) return [];
 
