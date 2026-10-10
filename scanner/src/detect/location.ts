@@ -1,7 +1,7 @@
 const MAX_EVIDENCE = 160;
 const CONTEXT_PAD = 40;
 // Format characters (incl. tags, bidi, zero-width), variation selectors and fillers.
-const INVISIBLE = /[\p{Cf}\u{180B}-\u{180F}\u{FE00}-\u{FE0F}\u{115F}\u{1160}\u{3164}\u{FFA0}\u{E0100}-\u{E01EF}]/gu;
+export const INVISIBLE = /[\p{Cf}\u{180B}-\u{180F}\u{FE00}-\u{FE0F}\u{115F}\u{1160}\u{3164}\u{FFA0}\u{E0100}-\u{E01EF}]/gu;
 const LONG_TOKEN = /[A-Za-z0-9_\-+/=]{32,}/g;
 
 // Offsets where each line starts (LF-terminated; CRLF works because CR stays on its line).

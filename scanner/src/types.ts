@@ -139,6 +139,7 @@ export type RuleId =
   | "obfuscated-payload"
   | "exfiltration"
   | "concealment"
+  | "known-payload"
   | "hook-command"
   | "hook-all-tools"
   | "hook-package-runner"

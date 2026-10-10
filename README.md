@@ -96,6 +96,7 @@ flowchart TD
 | `exfiltration` | A network call within 5 lines of a credential store or bulk-env dump | high |
 | `obfuscated-payload` | Long base64/hex blobs, escalated when the file also decodes/evals them | low→high |
 | `concealment` | "do not tell the user", "ignore previous instructions" | medium |
+| `known-payload` | A paragraph whose SimHash is within 7/64 bits of a seeded malicious instruction, so reworded copies still match | high |
 | `zero-width`, `variation-selector`, … | Other invisible characters, with emoji/keycap/joining-script exceptions | medium |
 | `hook-*`, `mcp-*`, `agent-shell` | Capability facts: shell hooks, match-all hooks, unpinned/remote MCP, shell-capable agents | info→medium |
 
@@ -117,7 +118,7 @@ Top findings:
 - Your home path is replaced with `~` in all output.
 - A broken plugin is recorded as an error, and the scan continues.
 
-**Planned:** SimHash matching of reworded attack payloads → an LLM judge on flagged files only → re-review when a plugin updates → disclosure (draft report → **human validation** → private report to the maintainer).
+**Planned:** an LLM judge on flagged files only → re-review when a plugin updates → disclosure (draft report → **human validation** → private report to the maintainer).
 
 ### Shared building blocks
 
@@ -216,9 +217,9 @@ AGENTS.md       conventions and guardrails for contributors (human or AI)
 
 | | Phishing hunter | Supply-chain scanner |
 |---|---|---|
-| ✅ Done | Phase 1: ground-truth feeds + labeling | Phase 1: AI-BOM inventory · Phase 2: deterministic detectors + SARIF |
-| Next | CT collector + scoring, sharded Bloom filter | SimHash near-duplicate matching |
-| Later | Investigation Workflow, LLM eval harness, chat UI, kit clustering, evaluation run | LLM judge, update diffs, evasion benchmark, disclosure workflow, public scan |
+| ✅ Done | Phase 1: ground-truth feeds + labeling | Phase 1: AI-BOM inventory · Phase 2: deterministic detectors + SARIF · Phase 3: SimHash near-duplicate matching |
+| Next | CT collector + scoring, sharded Bloom filter | Update diffs, LLM judge |
+| Later | Investigation Workflow, LLM eval harness, chat UI, kit clustering, evaluation run | Evasion benchmark, disclosure workflow, public scan |
 
 Full plans: [`cronenberg.prd.md`](.claude/PRPs/prds/cronenberg.prd.md) and [`agent-supply-chain-scanner.prd.md`](.claude/PRPs/prds/agent-supply-chain-scanner.prd.md).
 
